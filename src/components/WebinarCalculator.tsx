@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -17,7 +18,7 @@ interface WebinarCalculatorProps {
 
 const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({ 
   onSubmit,
-  bookingUrl = "https://calendly.com/example/webinar-strategy-call"
+  bookingUrl = "https://api.getsoftwaresavvy.com/widget/bookings/gtex-webinar-review-kit"
 }) => {
   const [expertise, setExpertise] = useState<ExpertiseLevel>("Proficient");
   const [pageViews, setPageViews] = useState<number>(1000);
@@ -67,7 +68,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                    : customShowUp / 100;
     
     let consultConv = expertise === 'Novice' ? 0.10
-                    : expertise === 'Proficient' ? 0.15
+                    : expertise === 'Proficient' ? 0.20  // Updated from 0.15 to 0.20
                     : expertise === 'Expert' ? 0.30
                     : customConsult / 100;
     
