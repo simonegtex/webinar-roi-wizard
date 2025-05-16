@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -21,7 +20,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
   bookingUrl = "https://calendly.com/example/webinar-strategy-call"
 }) => {
   const [expertise, setExpertise] = useState<ExpertiseLevel>("Proficient");
-  const [invites, setInvites] = useState<number>(1000);
+  const [pageViews, setPageViews] = useState<number>(1000);
   const [avgSaleValue, setAvgSaleValue] = useState<number>(500);
   const [webinarsPerYear, setWebinarsPerYear] = useState<number>(12);
   
@@ -49,7 +48,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
   useEffect(() => {
     calculateResults();
   }, [
-    expertise, invites, avgSaleValue, webinarsPerYear,
+    expertise, pageViews, avgSaleValue, webinarsPerYear,
     customPageConv, customShowUp, customConsult, customSale,
     includeCosts, includeBrand,
     platformCost, adSpend, staffingCost, brandValue
@@ -77,8 +76,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                  : expertise === 'Expert' ? 0.60
                  : customSale / 100;
 
-    // Core calculations for a single webinar
-    const registrations = invites * pageConv;
+    // Core calculations for a single webinar - replace invites with pageViews
+    const registrations = pageViews * pageConv;
     const attendees = registrations * showUpRate;
     const consultCalls = attendees * consultConv;
     const sales = consultCalls * saleConv;
@@ -139,7 +138,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
       onSubmit({
         inputs: {
           expertise,
-          invites,
+          pageViews,
           avgSaleValue,
           webinarsPerYear,
           includeCosts,
@@ -165,7 +164,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
       utm_source: 'roi_calculator',
       utm_medium: 'website',
       utm_campaign: 'webinar_strategy',
-      utm_content: `${expertise}_${invites}_${avgSaleValue}_${webinarsPerYear}`
+      utm_content: `${expertise}_${pageViews}_${avgSaleValue}_${webinarsPerYear}`
     }).toString();
     
     // Open the booking URL with UTM parameters
@@ -210,15 +209,15 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               </Select>
             </div>
 
-            {/* Invite List Size */}
+            {/* Page Views (formerly Invite List Size) */}
             <div className="space-y-2">
-              <Label htmlFor="invites" className="text-brand-blue font-medium">Total Invites</Label>
+              <Label htmlFor="pageViews" className="text-brand-blue font-medium">Page Views</Label>
               <Input
-                id="invites"
+                id="pageViews"
                 type="number"
                 min="1"
-                value={invites}
-                onChange={(e) => setInvites(Number(e.target.value))}
+                value={pageViews}
+                onChange={(e) => setPageViews(Number(e.target.value))}
               />
             </div>
 
@@ -512,11 +511,11 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     label={{ value: 'Webinar #', position: 'insideBottom', offset: -5 }} 
                   />
                   <YAxis 
-                    tickFormatter={(value) => `£${formatCurrency(value)}`} 
+                    tickFormatter={(value) => `£${formatCurrency(Number(value))}`} 
                     width={80}
                   />
                   <Tooltip 
-                    formatter={(value) => [`£${formatCurrency(value)}`, undefined]}
+                    formatter={(value) => [`£${formatCurrency(Number(value))}`, undefined]}
                     labelFormatter={(label) => `Webinar ${label}`}
                   />
                   <Line 
@@ -548,7 +547,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 my-8">
             <h3 className="text-xl font-semibold mb-2 text-brand-blue">Summary</h3>
             <p className="text-lg text-text">
-              With <strong>{invites.toLocaleString()}</strong> invites and an average sale of <strong>£{avgSaleValue.toLocaleString()}</strong>, 
+              With <strong>{pageViews.toLocaleString()}</strong> page views and an average sale of <strong>£{avgSaleValue.toLocaleString()}</strong>, 
               you'll make <strong>£{formatCurrency(results.single.revenue)}</strong> in one webinar 
               and <strong>£{formatCurrency(results.annual.revenue)}</strong> over {webinarsPerYear} webinars
               {includeCosts && ` — after costs, that's £${formatCurrency(results.annual.profit)} profit`}
