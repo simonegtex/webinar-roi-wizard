@@ -55,6 +55,14 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
     platformCost, adSpend, staffingCost, brandValue
   ]);
 
+  // Helper function for handling number input changes
+  const handleNumberInputChange = (
+    setValue: React.Dispatch<React.SetStateAction<number>>,
+    value: string
+  ) => {
+    setValue(value === "" ? 0 : Number(value));
+  };
+
   // Helper function to get conversion rates based on expertise level
   const getConversionRates = (expertiseLevel: ExpertiseLevel) => {
     const rates = {
@@ -143,18 +151,20 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
     
     for (let i = 1; i <= webinarsPerYear; i++) {
       // Determine expertise level based on webinar number
-      // Novice -> Proficient after 10 webinars, Proficient -> Expert after 20 webinars
+      // Progression: Novice -> Proficient after 10 webinars, Proficient -> Expert after another 20 webinars
       let currentRates;
       
       if (expertise === 'Novice') {
-        if (i >= 10) {
-          currentRates = proficientRates; // Progressed to Proficient
+        if (i >= 30) {
+          currentRates = expertRates; // After 10+20 webinars, now Expert
+        } else if (i >= 10) {
+          currentRates = proficientRates; // After 10 webinars, now Proficient
         } else {
           currentRates = initialRates; // Still Novice
         }
       } else if (expertise === 'Proficient') {
         if (i >= 20) {
-          currentRates = expertRates; // Progressed to Expert
+          currentRates = expertRates; // After 20 webinars, now Expert
         } else {
           currentRates = initialRates; // Still Proficient
         }
@@ -183,14 +193,32 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
       const roundedRevenue = Math.round(cumulativeRevenue * 100) / 100;
       const roundedProfit = Math.round(cumulativeProfit * 100) / 100;
       
+      // Determine current expertise level for the chart
+      let currentExpertiseLevel;
+      if (expertise === 'Novice') {
+        if (i >= 30) {
+          currentExpertiseLevel = 'Expert';
+        } else if (i >= 10) {
+          currentExpertiseLevel = 'Proficient';
+        } else {
+          currentExpertiseLevel = 'Novice';
+        }
+      } else if (expertise === 'Proficient') {
+        if (i >= 20) {
+          currentExpertiseLevel = 'Expert';
+        } else {
+          currentExpertiseLevel = 'Proficient';
+        }
+      } else {
+        currentExpertiseLevel = expertise;
+      }
+      
       chartData.push({
         webinar: i,
         revenue: roundedRevenue,
         profit: includeCosts ? roundedProfit : undefined,
         sales: currentSales,
-        expertise: expertise === 'Novice' && i >= 10 ? 'Proficient' :
-                  expertise === 'Proficient' && i >= 20 ? 'Expert' :
-                  expertise,
+        expertise: currentExpertiseLevel,
       });
     }
     
@@ -291,7 +319,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               </Select>
               {(expertise === 'Novice') && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  Skills improve to Proficient after 10 webinars.
+                  Skills improve to Proficient after 10 webinars and Expert after 30 webinars total.
                 </p>
               )}
               {(expertise === 'Proficient') && (
@@ -308,8 +336,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 id="pageViews"
                 type="number"
                 min="1"
-                value={pageViews}
-                onChange={(e) => setPageViews(Number(e.target.value))}
+                value={pageViews === 0 ? "" : pageViews}
+                onChange={(e) => handleNumberInputChange(setPageViews, e.target.value)}
               />
             </div>
 
@@ -320,8 +348,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 id="avgSaleValue"
                 type="number"
                 min="1"
-                value={avgSaleValue}
-                onChange={(e) => setAvgSaleValue(Number(e.target.value))}
+                value={avgSaleValue === 0 ? "" : avgSaleValue}
+                onChange={(e) => handleNumberInputChange(setAvgSaleValue, e.target.value)}
               />
             </div>
 
@@ -334,10 +362,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 min="1"
                 max="100"
                 value={webinarsPerYear === 0 ? "" : webinarsPerYear}
-                onChange={(e) => {
-                  const value = e.target.value === "" ? 0 : Number(e.target.value);
-                  setWebinarsPerYear(value);
-                }}
+                onChange={(e) => handleNumberInputChange(setWebinarsPerYear, e.target.value)}
               />
             </div>
           </div>
@@ -354,8 +379,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     type="number"
                     min="1"
                     max="100"
-                    value={customPageConv}
-                    onChange={(e) => setCustomPageConv(Number(e.target.value))}
+                    value={customPageConv === 0 ? "" : customPageConv}
+                    onChange={(e) => handleNumberInputChange(setCustomPageConv, e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -365,8 +390,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     type="number"
                     min="1"
                     max="100"
-                    value={customShowUp}
-                    onChange={(e) => setCustomShowUp(Number(e.target.value))}
+                    value={customShowUp === 0 ? "" : customShowUp}
+                    onChange={(e) => handleNumberInputChange(setCustomShowUp, e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -376,8 +401,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     type="number"
                     min="1"
                     max="100"
-                    value={customConsult}
-                    onChange={(e) => setCustomConsult(Number(e.target.value))}
+                    value={customConsult === 0 ? "" : customConsult}
+                    onChange={(e) => handleNumberInputChange(setCustomConsult, e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -387,8 +412,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     type="number"
                     min="1"
                     max="100"
-                    value={customSale}
-                    onChange={(e) => setCustomSale(Number(e.target.value))}
+                    value={customSale === 0 ? "" : customSale}
+                    onChange={(e) => handleNumberInputChange(setCustomSale, e.target.value)}
                   />
                 </div>
               </div>
@@ -429,8 +454,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     id="platformCost"
                     type="number"
                     min="0"
-                    value={platformCost}
-                    onChange={(e) => setPlatformCost(Number(e.target.value))}
+                    value={platformCost === 0 ? "" : platformCost}
+                    onChange={(e) => handleNumberInputChange(setPlatformCost, e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -439,8 +464,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     id="adSpend"
                     type="number"
                     min="0"
-                    value={adSpend}
-                    onChange={(e) => setAdSpend(Number(e.target.value))}
+                    value={adSpend === 0 ? "" : adSpend}
+                    onChange={(e) => handleNumberInputChange(setAdSpend, e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -449,8 +474,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     id="staffingCost"
                     type="number"
                     min="0"
-                    value={staffingCost}
-                    onChange={(e) => setStaffingCost(Number(e.target.value))}
+                    value={staffingCost === 0 ? "" : staffingCost}
+                    onChange={(e) => handleNumberInputChange(setStaffingCost, e.target.value)}
                   />
                 </div>
               </div>
@@ -468,8 +493,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     id="brandValue"
                     type="number"
                     min="0"
-                    value={brandValue}
-                    onChange={(e) => setBrandValue(Number(e.target.value))}
+                    value={brandValue === 0 ? "" : brandValue}
+                    onChange={(e) => handleNumberInputChange(setBrandValue, e.target.value)}
                   />
                 </div>
               </div>
