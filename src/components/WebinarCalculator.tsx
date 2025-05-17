@@ -143,19 +143,17 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
     
     for (let i = 1; i <= webinarsPerYear; i++) {
       // Determine expertise level based on webinar number
-      // Novice -> Proficient after 5 webinars, Proficient -> Expert after 10 webinars
+      // Novice -> Proficient after 10 webinars, Proficient -> Expert after 20 webinars
       let currentRates;
       
       if (expertise === 'Novice') {
         if (i >= 10) {
-          currentRates = expertRates; // Progressed to Expert
-        } else if (i >= 5) {
           currentRates = proficientRates; // Progressed to Proficient
         } else {
           currentRates = initialRates; // Still Novice
         }
       } else if (expertise === 'Proficient') {
-        if (i >= 10) {
+        if (i >= 20) {
           currentRates = expertRates; // Progressed to Expert
         } else {
           currentRates = initialRates; // Still Proficient
@@ -181,14 +179,17 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
       cumulativeRegistrations += currentRegs;
       cumulativeBrandLift += currentBrandLift;
       
+      // Round the revenue to 2 decimal places to avoid floating point precision issues
+      const roundedRevenue = Math.round(cumulativeRevenue * 100) / 100;
+      const roundedProfit = Math.round(cumulativeProfit * 100) / 100;
+      
       chartData.push({
         webinar: i,
-        revenue: cumulativeRevenue,
-        profit: includeCosts ? cumulativeProfit : undefined,
+        revenue: roundedRevenue,
+        profit: includeCosts ? roundedProfit : undefined,
         sales: currentSales,
-        expertise: expertise === 'Novice' && i >= 10 ? 'Expert' :
-                  expertise === 'Novice' && i >= 5 ? 'Proficient' :
-                  expertise === 'Proficient' && i >= 10 ? 'Expert' :
+        expertise: expertise === 'Novice' && i >= 10 ? 'Proficient' :
+                  expertise === 'Proficient' && i >= 20 ? 'Expert' :
                   expertise,
       });
     }
@@ -282,17 +283,20 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                   <SelectValue placeholder="Select Expertise Level" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Novice">Novice</SelectItem>
-                  <SelectItem value="Proficient">Proficient</SelectItem>
-                  <SelectItem value="Expert">Expert</SelectItem>
+                  <SelectItem value="Novice">Novice - Never sold from webinars before</SelectItem>
+                  <SelectItem value="Proficient">Proficient - Already sold from webinars but not consistently</SelectItem>
+                  <SelectItem value="Expert">Expert - Consistently selling from webinars</SelectItem>
                   <SelectItem value="Custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
-              {(expertise === 'Novice' || expertise === 'Proficient') && (
+              {(expertise === 'Novice') && (
                 <p className="text-xs text-muted-foreground mt-1">
-                  {expertise === 'Novice' ? 
-                    'Skills improve to Proficient after 5 webinars and Expert after 10 webinars.' : 
-                    'Skills improve to Expert after 10 webinars.'}
+                  Skills improve to Proficient after 10 webinars.
+                </p>
+              )}
+              {(expertise === 'Proficient') && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Skills improve to Expert after 20 webinars.
                 </p>
               )}
             </div>
@@ -329,8 +333,11 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 type="number"
                 min="1"
                 max="100"
-                value={webinarsPerYear}
-                onChange={(e) => setWebinarsPerYear(Number(e.target.value))}
+                value={webinarsPerYear === 0 ? "" : webinarsPerYear}
+                onChange={(e) => {
+                  const value = e.target.value === "" ? 0 : Number(e.target.value);
+                  setWebinarsPerYear(value);
+                }}
               />
             </div>
           </div>
