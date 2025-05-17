@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -343,7 +342,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
 
             {/* Average Sale Value */}
             <div className="space-y-2">
-              <Label htmlFor="avgSaleValue" className="text-brand-blue font-medium">Average Revenue per Sale (£)</Label>
+              <Label htmlFor="avgSaleValue" className="text-brand-blue font-medium">Average Revenue per Sale ($)</Label>
               <Input
                 id="avgSaleValue"
                 type="number"
@@ -446,7 +445,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
           {/* Cost inputs (only shown when Include Costs is toggled on) */}
           {includeCosts && (
             <div className="mt-6 border-t pt-6">
-              <h3 className="text-brand-blue font-semibold mb-4">Cost Details (£ per webinar)</h3>
+              <h3 className="text-brand-blue font-semibold mb-4">Cost Details ($ per webinar)</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="platformCost" className="text-text">Platform Cost</Label>
@@ -488,7 +487,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               <h3 className="text-brand-blue font-semibold mb-4">Brand Value</h3>
               <div className="grid grid-cols-1 gap-6 max-w-xs">
                 <div className="space-y-2">
-                  <Label htmlFor="brandValue" className="text-text">Value per Impression (£)</Label>
+                  <Label htmlFor="brandValue" className="text-text">Value per Impression ($)</Label>
                   <Input
                     id="brandValue"
                     type="number"
@@ -543,7 +542,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               <Card className="bg-white shadow-md">
                 <CardContent className="p-4">
                   <h4 className="text-sm text-brand-gold font-medium">Revenue</h4>
-                  <p className="text-2xl font-bold">£{formatCurrency(results.single.revenue)}</p>
+                  <p className="text-2xl font-bold">${formatCurrency(results.single.revenue)}</p>
                 </CardContent>
               </Card>
               
@@ -551,7 +550,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 <Card className="bg-white shadow-md">
                   <CardContent className="p-4">
                     <h4 className="text-sm text-brand-gold font-medium">Profit</h4>
-                    <p className="text-2xl font-bold">£{formatCurrency(results.single.profit)}</p>
+                    <p className="text-2xl font-bold">${formatCurrency(results.single.profit)}</p>
                   </CardContent>
                 </Card>
               )}
@@ -560,7 +559,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 <Card className="bg-white shadow-md">
                   <CardContent className="p-4">
                     <h4 className="text-sm text-brand-gold font-medium">Brand Lift Value</h4>
-                    <p className="text-2xl font-bold">£{formatCurrency(results.single.brandLift)}</p>
+                    <p className="text-2xl font-bold">${formatCurrency(results.single.brandLift)}</p>
                   </CardContent>
                 </Card>
               )}
@@ -568,7 +567,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               <Card className="bg-white shadow-md">
                 <CardContent className="p-4">
                   <h4 className="text-sm text-brand-gold font-medium">Total Value</h4>
-                  <p className="text-2xl font-bold">£{formatCurrency(results.single.totalValue)}</p>
+                  <p className="text-2xl font-bold">${formatCurrency(results.single.totalValue)}</p>
                 </CardContent>
               </Card>
             </div>
@@ -588,7 +587,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               <Card className="bg-white shadow-md">
                 <CardContent className="p-4">
                   <h4 className="text-sm text-brand-gold font-medium">Total Revenue</h4>
-                  <p className="text-2xl font-bold">£{formatCurrency(results.annual.revenue)}</p>
+                  <p className="text-2xl font-bold">${formatCurrency(results.annual.revenue)}</p>
                 </CardContent>
               </Card>
               
@@ -596,7 +595,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 <Card className="bg-white shadow-md">
                   <CardContent className="p-4">
                     <h4 className="text-sm text-brand-gold font-medium">Total Profit</h4>
-                    <p className="text-2xl font-bold">£{formatCurrency(results.annual.profit)}</p>
+                    <p className="text-2xl font-bold">${formatCurrency(results.annual.profit)}</p>
                   </CardContent>
                 </Card>
               )}
@@ -605,7 +604,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                 <Card className="bg-white shadow-md">
                   <CardContent className="p-4">
                     <h4 className="text-sm text-brand-gold font-medium">Total Brand Value</h4>
-                    <p className="text-2xl font-bold">£{formatCurrency(results.annual.brandLift)}</p>
+                    <p className="text-2xl font-bold">${formatCurrency(results.annual.brandLift)}</p>
                   </CardContent>
                 </Card>
               )}
@@ -613,7 +612,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               <Card className="bg-white shadow-md md:col-span-1">
                 <CardContent className="p-4">
                   <h4 className="text-sm text-brand-gold font-medium">Total Value</h4>
-                  <p className="text-2xl font-bold">£{formatCurrency(results.annual.totalValue)}</p>
+                  <p className="text-2xl font-bold">${formatCurrency(results.annual.totalValue)}</p>
                 </CardContent>
               </Card>
             </div>
@@ -631,13 +630,13 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     label={{ value: 'Webinar #', position: 'insideBottom', offset: -5 }} 
                   />
                   <YAxis 
-                    tickFormatter={(value) => `£${formatCurrency(Number(value))}`} 
+                    tickFormatter={(value) => `$${formatCurrency(Number(value))}`} 
                     width={80}
                   />
                   <Tooltip 
                     formatter={(value, name) => {
                       if (name === 'revenue' || name === 'profit') {
-                        return [`£${formatCurrency(Number(value))}`, name === 'revenue' ? 'Cumulative Revenue' : 'Cumulative Profit'];
+                        return [`$${formatCurrency(Number(value))}`, name === 'revenue' ? 'Cumulative Revenue' : 'Cumulative Profit'];
                       }
                       return [value, name];
                     }}
@@ -680,11 +679,11 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
           <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 my-8">
             <h3 className="text-xl font-semibold mb-2 text-brand-blue">Summary</h3>
             <p className="text-lg text-text">
-              With <strong>{pageViews.toLocaleString()}</strong> page views and an average sale of <strong>£{avgSaleValue.toLocaleString()}</strong>, 
-              you'll make <strong>£{formatCurrency(results.single.revenue)}</strong> in one webinar 
-              and <strong>£{formatCurrency(results.annual.revenue)}</strong> over {webinarsPerYear} webinars
-              {includeCosts && ` — after costs, that's £${formatCurrency(results.annual.profit)} profit`}
-              {includeBrand && `. Plus, an estimated £${formatCurrency(results.annual.brandLift)} of brand-lift value`}.
+              With <strong>{pageViews.toLocaleString()}</strong> page views and an average sale of <strong>${avgSaleValue.toLocaleString()}</strong>, 
+              you'll make <strong>${formatCurrency(results.single.revenue)}</strong> in one webinar 
+              and <strong>${formatCurrency(results.annual.revenue)}</strong> over {webinarsPerYear} webinars
+              {includeCosts && ` — after costs, that's $${formatCurrency(results.annual.profit)} profit`}
+              {includeBrand && `. Plus, an estimated $${formatCurrency(results.annual.brandLift)} of brand-lift value`}.
               {(expertise === 'Novice' || expertise === 'Proficient') && (
                 <span> Your skills will improve over time, increasing your results beyond these initial estimates.</span>
               )}
