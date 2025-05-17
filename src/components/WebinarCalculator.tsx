@@ -55,33 +55,56 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
     platformCost, adSpend, staffingCost, brandValue
   ]);
 
-  const calculateResults = () => {
-    // Calculate conversion rates based on expertise level
-    let pageConv = expertise === 'Novice' ? 0.30
-                 : expertise === 'Proficient' ? 0.40
-                 : expertise === 'Expert' ? 0.40
-                 : customPageConv / 100;
+  // Helper function to get conversion rates based on expertise level
+  const getConversionRates = (expertiseLevel: ExpertiseLevel) => {
+    const rates = {
+      pageConv: 0,
+      showUpRate: 0,
+      consultConv: 0,
+      saleConv: 0
+    };
     
-    let showUpRate = expertise === 'Novice' ? 0.30
-                   : expertise === 'Proficient' ? 0.40
-                   : expertise === 'Expert' ? 0.50
-                   : customShowUp / 100;
+    if (expertiseLevel === 'Custom') {
+      rates.pageConv = customPageConv / 100;
+      rates.showUpRate = customShowUp / 100;
+      rates.consultConv = customConsult / 100;
+      rates.saleConv = customSale / 100;
+      return rates;
+    }
     
-    let consultConv = expertise === 'Novice' ? 0.10
-                    : expertise === 'Proficient' ? 0.20  // Updated from 0.15 to 0.20
-                    : expertise === 'Expert' ? 0.30
-                    : customConsult / 100;
+    // Standard rates for each level
+    if (expertiseLevel === 'Novice') {
+      rates.pageConv = 0.30;
+      rates.showUpRate = 0.30;
+      rates.consultConv = 0.10;
+      rates.saleConv = 0.30;
+    } else if (expertiseLevel === 'Proficient') {
+      rates.pageConv = 0.40;
+      rates.showUpRate = 0.40;
+      rates.consultConv = 0.20;
+      rates.saleConv = 0.40;
+    } else if (expertiseLevel === 'Expert') {
+      rates.pageConv = 0.40;
+      rates.showUpRate = 0.50;
+      rates.consultConv = 0.30;
+      rates.saleConv = 0.60;
+    }
     
-    let saleConv = expertise === 'Novice' ? 0.30
-                 : expertise === 'Proficient' ? 0.40
-                 : expertise === 'Expert' ? 0.60
-                 : customSale / 100;
+    return rates;
+  };
 
-    // Core calculations for a single webinar - replace invites with pageViews
-    const registrations = pageViews * pageConv;
-    const attendees = registrations * showUpRate;
-    const consultCalls = attendees * consultConv;
-    const sales = consultCalls * saleConv;
+  const calculateResults = () => {
+    // Get initial conversion rates
+    const initialRates = getConversionRates(expertise);
+    const proficientRates = getConversionRates('Proficient');
+    const expertRates = getConversionRates('Expert');
+    
+    // Core calculations for a single webinar (using initial expertise)
+    const rates = initialRates;
+    const registrations = pageViews * rates.pageConv;
+    const attendees = registrations * rates.showUpRate;
+    const consultCalls = attendees * rates.consultConv;
+    const sales = consultCalls * rates.saleConv;
     const revenue = sales * avgSaleValue;
 
     // Optional ROIs
@@ -89,13 +112,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
     const profit = revenue - totalCost;
     const brandLift = includeBrand ? attendees * brandValue : 0;
 
-    // Annual totals
-    const annualRegs = registrations * webinarsPerYear;
-    const annualRevenue = revenue * webinarsPerYear;
-    const annualProfit = profit * webinarsPerYear;
-    const annualBrand = brandLift * webinarsPerYear;
-
-    // Store results
+    // Store single webinar results
     setResults({
       single: {
         registrations,
@@ -108,31 +125,89 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
         totalValue: revenue + (includeBrand ? brandLift : 0),
       },
       annual: {
-        registrations: annualRegs,
-        revenue: annualRevenue,
-        profit: includeCosts ? annualProfit : null,
-        brandLift: includeBrand ? annualBrand : null,
-        totalValue: annualRevenue + (includeBrand ? annualBrand : 0),
+        // Annual values will be updated below after calculating chart data
+        registrations: 0,
+        revenue: 0,
+        profit: 0,
+        brandLift: 0,
+        totalValue: 0
       }
     });
 
-    // Generate chart data for cumulative revenue over time
+    // Generate chart data for cumulative revenue over time with skill progression
     const chartData = [];
     let cumulativeRevenue = 0;
     let cumulativeProfit = 0;
+    let cumulativeRegistrations = 0;
+    let cumulativeBrandLift = 0;
     
     for (let i = 1; i <= webinarsPerYear; i++) {
-      cumulativeRevenue += revenue;
-      cumulativeProfit += profit;
+      // Determine expertise level based on webinar number
+      // Novice -> Proficient after 5 webinars, Proficient -> Expert after 10 webinars
+      let currentRates;
+      
+      if (expertise === 'Novice') {
+        if (i >= 10) {
+          currentRates = expertRates; // Progressed to Expert
+        } else if (i >= 5) {
+          currentRates = proficientRates; // Progressed to Proficient
+        } else {
+          currentRates = initialRates; // Still Novice
+        }
+      } else if (expertise === 'Proficient') {
+        if (i >= 10) {
+          currentRates = expertRates; // Progressed to Expert
+        } else {
+          currentRates = initialRates; // Still Proficient
+        }
+      } else {
+        // Expert or Custom - no progression
+        currentRates = initialRates;
+      }
+      
+      // Calculate webinar metrics using current rates
+      const currentRegs = pageViews * currentRates.pageConv;
+      const currentAttendees = currentRegs * currentRates.showUpRate;
+      const currentConsults = currentAttendees * currentRates.consultConv;
+      const currentSales = currentConsults * currentRates.saleConv;
+      const currentRevenue = currentSales * avgSaleValue;
+      const currentCost = includeCosts ? platformCost + adSpend + staffingCost : 0;
+      const currentProfit = currentRevenue - currentCost;
+      const currentBrandLift = includeBrand ? currentAttendees * brandValue : 0;
+      
+      // Accumulate totals
+      cumulativeRevenue += currentRevenue;
+      cumulativeProfit += currentProfit;
+      cumulativeRegistrations += currentRegs;
+      cumulativeBrandLift += currentBrandLift;
       
       chartData.push({
         webinar: i,
         revenue: cumulativeRevenue,
         profit: includeCosts ? cumulativeProfit : undefined,
+        sales: currentSales,
+        expertise: expertise === 'Novice' && i >= 10 ? 'Expert' :
+                  expertise === 'Novice' && i >= 5 ? 'Proficient' :
+                  expertise === 'Proficient' && i >= 10 ? 'Expert' :
+                  expertise,
       });
     }
     
     setChartData(chartData);
+    
+    // Update annual totals based on the final chart data
+    if (results) {
+      setResults(prevResults => ({
+        ...prevResults,
+        annual: {
+          registrations: cumulativeRegistrations,
+          revenue: cumulativeRevenue,
+          profit: includeCosts ? cumulativeProfit : null,
+          brandLift: includeBrand ? cumulativeBrandLift : null,
+          totalValue: cumulativeRevenue + (includeBrand ? cumulativeBrandLift : 0),
+        }
+      }));
+    }
     
     // If onSubmit handler is provided, call it with the results
     if (onSubmit) {
@@ -151,8 +226,8 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
             profit: includeCosts ? profit : null,
           },
           annual: {
-            revenue: annualRevenue,
-            profit: includeCosts ? annualProfit : null,
+            revenue: cumulativeRevenue,
+            profit: includeCosts ? cumulativeProfit : null,
           }
         }
       });
@@ -170,6 +245,11 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
     
     // Open the booking URL with UTM parameters
     window.open(`${bookingUrl}?${utmParams}`, '_blank');
+  };
+
+  // Helper to format sales numbers with one decimal place
+  const formatSales = (value: number): string => {
+    return value.toFixed(1);
   };
 
   return (
@@ -208,9 +288,16 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                   <SelectItem value="Custom">Custom</SelectItem>
                 </SelectContent>
               </Select>
+              {(expertise === 'Novice' || expertise === 'Proficient') && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  {expertise === 'Novice' ? 
+                    'Skills improve to Proficient after 5 webinars and Expert after 10 webinars.' : 
+                    'Skills improve to Expert after 10 webinars.'}
+                </p>
+              )}
             </div>
 
-            {/* Page Views (formerly Invite List Size) */}
+            {/* Page Views */}
             <div className="space-y-2">
               <Label htmlFor="pageViews" className="text-brand-blue font-medium">Page Views</Label>
               <Input
@@ -417,7 +504,7 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               <Card className="bg-white shadow-md">
                 <CardContent className="p-4">
                   <h4 className="text-sm text-brand-gold font-medium">Sales</h4>
-                  <p className="text-2xl font-bold">{Math.round(results.single.sales)}</p>
+                  <p className="text-2xl font-bold">{formatSales(results.single.sales)}</p>
                 </CardContent>
               </Card>
               
@@ -516,8 +603,21 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
                     width={80}
                   />
                   <Tooltip 
-                    formatter={(value) => [`£${formatCurrency(Number(value))}`, undefined]}
-                    labelFormatter={(label) => `Webinar ${label}`}
+                    formatter={(value, name) => {
+                      if (name === 'revenue' || name === 'profit') {
+                        return [`£${formatCurrency(Number(value))}`, name === 'revenue' ? 'Cumulative Revenue' : 'Cumulative Profit'];
+                      }
+                      return [value, name];
+                    }}
+                    labelFormatter={(label, payload) => {
+                      if (payload && payload.length > 0) {
+                        const item = payload[0].payload;
+                        const expertiseLevel = item.expertise;
+                        const sales = item.sales ? formatSales(item.sales) : '0.0';
+                        return `Webinar ${label} (${expertiseLevel}) - Sales: ${sales}`;
+                      }
+                      return `Webinar ${label}`;
+                    }}
                   />
                   <Line 
                     type="monotone" 
@@ -553,6 +653,9 @@ const WebinarCalculator: React.FC<WebinarCalculatorProps> = ({
               and <strong>£{formatCurrency(results.annual.revenue)}</strong> over {webinarsPerYear} webinars
               {includeCosts && ` — after costs, that's £${formatCurrency(results.annual.profit)} profit`}
               {includeBrand && `. Plus, an estimated £${formatCurrency(results.annual.brandLift)} of brand-lift value`}.
+              {(expertise === 'Novice' || expertise === 'Proficient') && (
+                <span> Your skills will improve over time, increasing your results beyond these initial estimates.</span>
+              )}
             </p>
           </div>
 
